@@ -1,72 +1,28 @@
 const express = require("express");
+const router = express.Router();
+const { uploadJewelry, fetchjewelry, deleteJewelry } = require("../controllers/jewelleryController.js");
 const multer = require("multer");
 const path = require("path");
-const router = express.Router();
-const Jewellery = require("../models/Jewellery");
 
-// Multer setup for file uploads
+// Multer Setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads"); // Save files to the uploads directory
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Unique filenames
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    const fileTypes = /jpg|jpeg|png|gltf|glb/;
-    const extname = fileTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-    if (extname) {
-      return cb(null, true);
-    }
-    cb(new Error("Only .jpg, .jpeg, .png, .gltf, and .glb formats are allowed!"));
-  },
-});
+const upload = multer({ storage });
 
-// Add a new jewellery item
-router.post("/", upload.fields([{ name: "imageFile" }, { name: "modelFile" }]), async (req, res) => {
-  try {
-    const { name, price, weight, description } = req.body;
+router.post(
+  "/upload",
+  upload.fields([{ name: "imageFile", maxCount: 1 }, { name: "modelFile", maxCount: 1 }]),
+  uploadJewelry
+);
 
-    const imageUrl = req.files.imageFile
-      ? `/uploads/${req.files.imageFile[0].filename}`
-      : null;
-
-    const modelUrl = req.files.modelFile
-      ? `/uploads/${req.files.modelFile[0].filename}`
-      : null;
-
-    const newJewellery = new Jewellery({
-      name,
-      price,
-      weight,
-      description,
-      imageUrl,
-      modelUrl,
-    });
-
-    const savedJewellery = await newJewellery.save();
-    res.status(201).json(savedJewellery);
-  } catch (error) {
-    console.error("Error saving jewellery:", error);
-    res.status(500).json({ message: "Failed to save jewellery item" });
-  }
-});
-
-// Get all jewellery items
-router.get("/", async (req, res) => {
-  try {
-    const jewelleryItems = await Jewellery.find();
-    res.status(200).json(jewelleryItems);
-  } catch (error) {
-    console.error("Error fetching jewellery:", error);
-    res.status(500).json({ message: "Failed to fetch jewellery items" });
-  }
-});
+router.get("/", fetchjewelry);
+router.delete('/delete/:id', deleteJewelry); 
 
 module.exports = router;
