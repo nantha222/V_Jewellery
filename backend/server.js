@@ -9,38 +9,52 @@ const fs = require("fs");
 dotenv.config();
 
 const app = express();
-app.use(
-  cors({
-    origin: "http://localhost:5173", // Allow requests from this origin
-    credentials: true, // Allow sending cookies
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allow these HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
-  })
-);
-app.use(express.json()); // To parse incoming JSON requests
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log("Uploads directory created");
-}
+// Middleware Setup
+const setupMiddleware = () => {
+  app.use(cors());
+  app.use(express.json()); // Parse JSON requests
+};
 
-// Serve static files from uploads directory
-app.use("/uploads", express.static(uploadsDir));
+setupMiddleware();
+
+// Ensure uploads directory exists
+const ensureUploadsDir = () => {
+  const uploadsDir = path.join(__dirname, "uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log("✅ Uploads directory created");
+  }
+};
+
+ensureUploadsDir();
+
+// Serve static files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error("MongoDB connection error:", err));
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ MongoDB connected successfully");
+  } catch (error) {
+    console.error("❌ MongoDB connection error:", error);
+    process.exit(1); // Exit on failure
+  }
+};
+
+connectDB();
 
 // Routes
-app.use("/api/auth", require("./src/routes/authRoute.js"));
-app.use("/api/jewellery", require("./src/routes/jewelleryRoute.js"));
+app.use("/api/auth", require("./src/routes/authRoute"));
+app.use("/api/jewellery", require("./src/routes/jewelleryRoute"));
 
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

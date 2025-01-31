@@ -10,6 +10,7 @@ const Upload = () => {
     modelFile: null,
   });
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,15 +25,20 @@ const Upload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // // Validate file extensions
-    // if (!jewelry.imageFile?.name.endsWith(".jpg")) {
-    //   setMessage("Only .jpg files are allowed for images.");
-    //   return;
-    // }
-    // if (!jewelry.modelFile?.name.endsWith(".gtpl")) {
-    //   setMessage("Only .glb files are allowed for 3D models.");
-    //   return;
-    // }
+    if (!jewelry.imageFile || !jewelry.modelFile) {
+      setMessage("Please upload both an image and a 3D model.");
+      return;
+    }
+
+    // Validate file extensions
+    if (!jewelry.imageFile.name.toLowerCase().endsWith(".jpg")) {
+      setMessage("Only .jpg files are allowed for images.");
+      return;
+    }
+    if (!jewelry.modelFile.name.toLowerCase().endsWith(".glb")) {
+      setMessage("Only .glb files are allowed for 3D models.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("name", jewelry.name);
@@ -42,8 +48,10 @@ const Upload = () => {
     formData.append("imageFile", jewelry.imageFile);
     formData.append("modelFile", jewelry.modelFile);
 
+    setLoading(true);
+
     try {
-      const response = await fetch("http://localhost:5000/api/jewellery/upload", {
+      const response = await fetch("https://lj2dpdwr-5000.inc1.devtunnels.ms/api/jewellery/upload", {
         method: "POST",
         body: formData,
       });
@@ -64,110 +72,117 @@ const Upload = () => {
       }
     } catch (error) {
       setMessage("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="h-screen w-screen bg-blue-900 from-blue-50 to-purple-50">
-      <main className="pt-20">
-        <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-3xl font-bold text-gray-700 mb-6 text-center">Upload Jewelry Design</h2>
-          {message && (
-            <p className={`text-center font-medium mb-6 ${
-              message.includes("Error") ? "text-red-600" : "text-green-600"
-            }`}>
-              {message}
-            </p>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-gray-600 font-medium mb-1">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={jewelry.name}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600 font-medium mb-1">Price (₹)</label>
-              <input
-                type="number"
-                name="price"
-                value={jewelry.price}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600 font-medium mb-1">Weight (g)</label>
-              <input
-                type="number"
-                name="weight"
-                value={jewelry.weight}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600 font-medium mb-1">Description</label>
-              <textarea
-                name="description"
-                value={jewelry.description}
-                onChange={handleChange}
-                required
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              ></textarea>
-            </div>
+    <div className="h-screen w-screen bg-gradient-to-br from-blue-900 flex justify-center items-center">
+      <div className="max-w-2xl w-full bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold text-gray-700 mb-6 text-center">Upload Jewelry Design</h2>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-600 font-medium mb-2">Image (.jpg only)</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                  <input
-                    type="file"
-                    name="imageFile"
-                    accept=".jpg"
-                    onChange={handleFileChange}
-                    className="opacity-0 absolute cursor-pointer"
-                  />
-                  <p className="text-gray-500">
-                    {jewelry.imageFile ? jewelry.imageFile.name : "Click to upload image"}
-                  </p>
-                </div>
-              </div>
+        {message && (
+          <p className={`text-center font-medium mb-6 ${
+            message.includes("Error") ? "text-red-600" : "text-green-600"
+          }`}>
+            {message}
+          </p>
+        )}
 
-              <div>
-                <label className="block text-gray-600 font-medium mb-2">3D Model (.glb only)</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                  <input
-                    type="file"
-                    name="modelFile"
-                    accept=".glb"
-                    onChange={handleFileChange}
-                    className="opacity-0 absolute cursor-pointer"
-                  />
-                  <p className="text-gray-500">
-                    {jewelry.modelFile ? jewelry.modelFile.name : "Click to upload 3D model"}
-                  </p>
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-gray-600 font-medium mb-1">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={jewelry.name}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-600 font-medium mb-1">Price (₹)</label>
+            <input
+              type="number"
+              name="price"
+              value={jewelry.price}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-600 font-medium mb-1">Weight (g)</label>
+            <input
+              type="number"
+              name="weight"
+              value={jewelry.weight}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-600 font-medium mb-1">Description</label>
+            <textarea
+              name="description"
+              value={jewelry.description}
+              onChange={handleChange}
+              required
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Image Upload */}
+            <div>
+              <label className="block text-gray-600 font-medium mb-2">Image (.jpg only)</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative">
+                <input
+                  type="file"
+                  name="imageFile"
+                  accept=".jpg"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <p className="text-gray-500">
+                  {jewelry.imageFile ? jewelry.imageFile.name : "Click to upload image"}
+                </p>
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-all transform hover:scale-101"
-            >
-              Upload Design
-            </button>
-          </form>
-        </div>
-      </main>
+            {/* 3D Model Upload */}
+            <div>
+              <label className="block text-gray-600 font-medium mb-2">3D Model (.glb only)</label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative">
+                <input
+                  type="file"
+                  name="modelFile"
+                  accept=".glb"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <p className="text-gray-500">
+                  {jewelry.modelFile ? jewelry.modelFile.name : "Click to upload 3D model"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-all transform hover:scale-101 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Uploading..." : "Upload Design"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
