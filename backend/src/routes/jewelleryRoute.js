@@ -1,28 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const { uploadJewelry, fetchjewelry, deleteJewelry } = require("../controllers/jewelleryController.js");
-const multer = require("multer");
-const path = require("path");
+const { uploadJewelry, fetchJewelry, deleteJewelry, updateJewelry } = require("../controllers/jewelleryController");
+const upload = require("../middleware/multer");
 
-// Multer Setup
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
-
+// Route for uploading jewellery (image & 3D model)
 router.post(
-  "/upload",
-  upload.fields([{ name: "imageFile", maxCount: 1 }, { name: "modelFile", maxCount: 1 }]),
-  uploadJewelry
+    "/upload",
+    upload.fields([{ name: "imageFile", maxCount: 1 }, { name: "modelFile", maxCount: 1 }]),
+    uploadJewelry
 );
 
-router.get("/", fetchjewelry);
-router.delete('/delete/:id', deleteJewelry); 
+// Route for fetching all jewellery items
+router.get("/", fetchJewelry);
+
+// Route for updating a jewellery item
+router.patch("/update/:id", updateJewelry);
+
+// Route for deleting a jewellery item
+router.delete("/delete/:id", deleteJewelry);
 
 module.exports = router;
