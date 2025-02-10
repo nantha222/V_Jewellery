@@ -8,7 +8,9 @@ const Upload = () => {
     description: "",
     imageFile: null,
     modelFile: null,
+    imageUrl: "", // For previewing the uploaded image
   });
+
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +21,13 @@ const Upload = () => {
 
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    setJewelry({ ...jewelry, [name]: files[0] });
+    if (files.length > 0) {
+      setJewelry({
+        ...jewelry,
+        [name]: files[0],
+        imageUrl: name === "imageFile" ? URL.createObjectURL(files[0]) : jewelry.imageUrl,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -65,6 +73,7 @@ const Upload = () => {
           description: "",
           imageFile: null,
           modelFile: null,
+          imageUrl: "",
         });
       } else {
         const errorData = await response.json();
@@ -83,9 +92,11 @@ const Upload = () => {
         <h2 className="text-3xl font-bold text-gray-700 mb-6 text-center">Upload Jewelry Design</h2>
 
         {message && (
-          <p className={`text-center font-medium mb-6 ${
-            message.includes("Error") ? "text-red-600" : "text-green-600"
-          }`}>
+          <p
+            className={`text-center font-medium mb-6 ${
+              message.includes("Error") ? "text-red-600" : "text-green-600"
+            }`}
+          >
             {message}
           </p>
         )}
@@ -150,9 +161,11 @@ const Upload = () => {
                   onChange={handleFileChange}
                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 />
-                <p className="text-gray-500">
-                  {jewelry.imageFile ? jewelry.imageFile.name : "Click to upload image"}
-                </p>
+                {jewelry.imageUrl ? (
+                  <img src={jewelry.imageUrl} alt="Preview" className="w-full h-32 object-cover rounded-md" />
+                ) : (
+                  <p className="text-gray-500">Click to upload image</p>
+                )}
               </div>
             </div>
 
