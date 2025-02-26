@@ -1,12 +1,37 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const JewellerySchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    price: { type: Number, required: true },
-    weight: { type: String, required: true },
-    description: { type: String, required: true },
-    imageUrl: { type: String, required: true },
-    modelUrl: { type: String, required: true },
+const jewelrySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  weight: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  imageUrl: {
+    type: String,
+    required: true
+  },
+  modelUrl: {
+    type: String,
+    required: true
+  }
+}, {
+  timestamps: true // Automatically adds createdAt and updatedAt fields
 });
 
-module.exports = mongoose.model("Jewelry", JewellerySchema);
+const Jewelry = mongoose.model('Jewelry', jewelrySchema);
+
+module.exports = Jewelry;

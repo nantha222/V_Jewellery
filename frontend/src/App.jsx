@@ -4,6 +4,7 @@ import RegisterPage from "./pages/RegisterPage"
 import LoginPage from "./pages/LoginPage"
 import UserPage from "./pages/UserPage"
 import AdminPage from "./pages/AdminPage"
+import TryOnPage from "./pages/TryOnPage"
 import { Home } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import Upload from './pages/Upload';
@@ -11,12 +12,16 @@ const App = () => {
   return (
     <Router>
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-        
+
         <Routes>
           <Route path="/" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/user" element={<UserPage />} />
           <Route path="/*" element={<AdminPage />} />
+          <Route
+            path="/tryon"
+            element={<TryOnPage modelUrl="/path/to/your/model.glb" type="ring" />}
+          />
         </Routes>
       </div>
     </Router>

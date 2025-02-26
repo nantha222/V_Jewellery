@@ -3,59 +3,68 @@ const fs = require("fs");
 const path = require("path");
 
 // Upload Jewelry
-exports.uploadJewelry = async (req, res) => {
+exports.uploadJewellery = async (req, res) => {
     try {
         const { name, price, weight, description } = req.body;
-
-        // Construct full URLs for image and model
-        const imageUrl = req.files["imageFile"]?.[0]?.filename
-            ? `${req.protocol}://${req.get("host")}/uploads/${req.files["imageFile"][0].filename}`
-            : "";
         
-        const modelUrl = req.files["modelFile"]?.[0]?.filename
-            ? `${req.protocol}://${req.get("host")}/uploads/${req.files["modelFile"][0].filename}`
-            : "";
+        if (!req.files || !req.files.imageFile || !req.files.modelFile) {
+            return res.status(400).json({ message: "Image and model files are required" });
+        }
 
-        const newJewelry = new Jewelry({ name, price, weight, description, imageUrl, modelUrl });
-        await newJewelry.save();
+        const imageFileId = req.files.imageFile[0].id;
+        const modelFileId = req.files.modelFile[0].id;
+        const modelFileName = req.files.modelFile[0].originalname.toLowerCase();
 
-        res.status(201).json({ message: "Jewelry uploaded successfully", jewelry: newJewelry });
+        let modelType = "unknown";
+        if (modelFileName.includes("ring")) modelType = "ring";
+        else if (modelFileName.includes("bangle") || modelFileName.includes("bracelet")) modelType = "bangle";
+
+        const jewellery = new Jewelry({ 
+            name, 
+            price, 
+            weight, 
+            description, 
+            imageFileId, 
+            modelFileId, 
+            modelType
+        });
+
+        await jewellery.save();
+        res.status(201).json({ message: "Jewellery uploaded successfully", modelType });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server Error" });
+        console.error("Upload Error:", error);
+        res.status(500).json({ message: "Upload failed", error: error.message });
     }
 };
 
-// Fetch Jewelry Items
-exports.fetchJewelry = async (req, res) => {
+
+// Fetch Jewelry Itemsexports.fetchJewelry = async (req, res) => {
     try {
         const jewelries = await Jewelry.find();
-        res.json(jewelries);
+        const updatedJewelries = jewelries.map(jewelry => ({
+            ...jewelry._doc,
+            imageUrl: `/uploads/${jewelry.imageFileId}`, // Modify based on actual storage path
+            modelUrl: `/models/${jewelry.modelFileId}`
+        }));
+        res.json(updatedJewelries);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server Error" });
     }
-};
+
 
 // Update Jewelry Item
 exports.updateJewelry = async (req, res) => {
     try {
         const { price, weight, description } = req.body;
+        const jewelry = await Jewelry.findByIdAndUpdate(req.params.id, { price, weight, description }, { new: true });
 
-        const updatedJewelry = await Jewelry.findByIdAndUpdate(
-            req.params.id,
-            { price, weight, description },
-            { new: true, runValidators: true }
-        );
+        if (!jewelry) return res.status(404).json({ message: "Jewelry not found" });
 
-        if (!updatedJewelry) {
-            return res.status(404).json({ message: "Jewelry not found" });
-        }
-
-        res.json({ message: "Updated successfully", jewelry: updatedJewelry });
+        res.json({ message: "Updated successfully", jewelry });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Update failed" });
+        res.status(500).json({ message: "Update failed." });
     }
 };
 
@@ -65,7 +74,6 @@ exports.deleteJewelry = async (req, res) => {
         const jewelry = await Jewelry.findByIdAndDelete(req.params.id);
         if (!jewelry) return res.status(404).json({ message: "Jewelry not found" });
 
-        // Delete associated image and model files
         if (jewelry.imageUrl) {
             const imagePath = path.join(__dirname, "..", "uploads", path.basename(jewelry.imageUrl));
             if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);

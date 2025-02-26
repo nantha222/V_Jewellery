@@ -82,7 +82,7 @@ const HomePage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {jewelryList.map((item) => (
             <div key={item._id} className="bg-white bg-opacity-90 shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105">
-              <img src={item.imageUrl} alt={item.name} className="w-full h-48 object-cover" />
+             <img src={`http://localhost:5000${item.imageUrl}`} alt={item.name} />
               <div className="p-4 space-y-3">
                 <h3 className="text-xl font-bold text-gray-800">{item.name}</h3>
                 <p className="text-gray-700">Price: ₹{item.price}</p>

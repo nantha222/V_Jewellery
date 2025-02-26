@@ -1,71 +1,38 @@
 import React, { useEffect, useRef } from "react";
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import "@google/model-viewer";
 
-const ThreeDViewer = ({ modelUrl }) => {
-  const mountRef = useRef(null);
+const ThreeDViewer = ({ modelUrl, position }) => {
+  const modelViewerRef = useRef(null);
 
   useEffect(() => {
-    if (!modelUrl) return;
+    if (position && modelViewerRef.current) {
+      const modelViewer = modelViewerRef.current;
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 500 / 500, 0.1, 1000);
-    camera.position.set(0, 1, 3);
+      // Convert hand tracking position to 3D space
+      const xPos = (position.x - 0.5) * 1.5; // Normalize X
+      const yPos = (0.5 - position.y) * 1.5; // Normalize Y (invert)
+      const zPos = -0.5; // Depth (tweak if needed)
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(500, 500);
-    mountRef.current.appendChild(renderer.domElement);
+      // Update the model's position
+      modelViewer.setAttribute("camera-target", `${xPos} ${yPos} ${zPos}`);
+    }
+  }, [position]);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(2, 2, 2);
-    scene.add(directionalLight);
-
-    // Load 3D Model
-    const loader = new GLTFLoader();
-    let model;
-    loader.load(
-      modelUrl,
-      (gltf) => {
-        model = gltf.scene;
-        model.scale.set(1.5, 1.5, 1.5);
-        model.position.set(0, -1, 0);
-        scene.add(model);
-      },
-      undefined,
-      (error) => console.error("Error loading GLB model:", error)
-    );
-
-    // OrbitControls for manual rotation
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; // Smooth rotation
-    controls.dampingFactor = 0.05;
-    controls.rotateSpeed = 0.5;
-    controls.zoomSpeed = 1;
-    controls.enableZoom = true; // Allow zoom
-    controls.enablePan = true; // Allow panning
-    controls.target.set(0, 0, 0); // Focus point
-
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    // Cleanup function
-    return () => {
-      mountRef.current.removeChild(renderer.domElement);
-    };
-  }, [modelUrl]);
-
-  return <div ref={mountRef} className="w-full h-full"></div>;
+  return (
+    <model-viewer
+      ref={modelViewerRef}
+      src={modelUrl}
+      alt="3D Model"
+      auto-rotate
+      camera-controls
+      ar
+      shadow-intensity="1"
+      exposure="1.2"
+      environment-image="neutral"
+      rotation-per-second="30deg"
+      style={{ width: "100%", height: "500px" }}
+    />
+  );
 };
 
 export default ThreeDViewer;

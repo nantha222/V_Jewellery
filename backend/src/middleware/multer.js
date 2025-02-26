@@ -1,27 +1,13 @@
 const multer = require("multer");
-const path = require("path");
 
-// Configure storage for multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/"); // Directory to save files
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
-    },
-});
-
-// File filter for allowed file types
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "application/octet-stream", "model/gltf-binary"];
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error("Invalid file type. Only .jpg, .png, and .glb are allowed."), false);
-    }
-};
-
-// Multer middleware
-const upload = multer({ storage, fileFilter });
+// Configure multer for file uploads
+const storage = multer.memoryStorage(); // Store in memory for processing
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 250 * 1024 * 1024 }, // 250MB limit
+}).fields([
+  { name: "imageFile", maxCount: 1 },
+  { name: "modelFile", maxCount: 1 },
+]);
 
 module.exports = upload;

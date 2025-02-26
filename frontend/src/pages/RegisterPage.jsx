@@ -61,8 +61,8 @@ const RegisterPage = () => {
               onClick={() => setRole("user")}
               className={`p-3 rounded-lg transition-colors ${
                 role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-800 hover:bg-blue-700 text-gray-300"
+                  ? "bg-cyan-600 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-gray-300"
               }`}
             >
               User

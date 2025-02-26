@@ -32,22 +32,12 @@ const Upload = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!jewelry.imageFile || !jewelry.modelFile) {
       setMessage("Please upload both an image and a 3D model.");
       return;
     }
-
-    // Validate file extensions
-    if (!jewelry.imageFile.name.toLowerCase().endsWith(".jpg")) {
-      setMessage("Only .jpg files are allowed for images.");
-      return;
-    }
-    if (!jewelry.modelFile.name.toLowerCase().endsWith(".glb")) {
-      setMessage("Only .glb files are allowed for 3D models.");
-      return;
-    }
-
+  
     const formData = new FormData();
     formData.append("name", jewelry.name);
     formData.append("price", jewelry.price);
@@ -55,26 +45,17 @@ const Upload = () => {
     formData.append("description", jewelry.description);
     formData.append("imageFile", jewelry.imageFile);
     formData.append("modelFile", jewelry.modelFile);
-
+  
     setLoading(true);
-
+  
     try {
-      const response = await fetch("https://lj2dpdwr-5000.inc1.devtunnels.ms/api/jewellery/upload", {
+      const response = await fetch("http://localhost:5000/api/jewellery/upload", {
         method: "POST",
         body: formData,
       });
-
+  
       if (response.ok) {
         setMessage("Jewelry uploaded successfully!");
-        setJewelry({
-          name: "",
-          price: "",
-          weight: "",
-          description: "",
-          imageFile: null,
-          modelFile: null,
-          imageUrl: "",
-        });
       } else {
         const errorData = await response.json();
         setMessage(`Error: ${errorData.message}`);
@@ -85,6 +66,7 @@ const Upload = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-blue-900 flex justify-center items-center">
