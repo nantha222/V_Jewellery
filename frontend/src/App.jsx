@@ -8,6 +8,7 @@ import TryOnPage from "./pages/TryOnPage"
 import { Home } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import Upload from './pages/Upload';
+import GoldRatePage from './pages/GoldRatePage';
 const App = () => {
   return (
     <Router>
@@ -18,6 +19,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/user" element={<UserPage />} />
           <Route path="/*" element={<AdminPage />} />
+          <Route path="/gold-rates" element={<GoldRatePage />} />
           <Route
             path="/tryon"
             element={<TryOnPage modelUrl="/path/to/your/model.glb" type="ring" />}

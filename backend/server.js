@@ -19,18 +19,18 @@ app.use(cors({ origin: "*" })); // Allow all origins
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ✅ Fix: Correct static file serving for "uploads"
+// ✅ Serve static files from backend/src/uploads
 app.use("/uploads", express.static(path.join(__dirname, "src", "uploads")));
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI; // ✅ Fix: Load MongoDB URI
+const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
     console.error("❌ MONGO_URI is not defined in .env file");
     process.exit(1);
 }
 
-// ✅ Fix: Correct MongoDB connection
+// ✅ Connect to MongoDB
 const connectDB = async () => {
     try {
         await mongoose.connect(MONGO_URI);
@@ -49,4 +49,5 @@ app.use("/api/jewellery", jewelleryRoutes);
 // Start Server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📂 Serving uploads from: ${path.join(__dirname, "src", "uploads")}`);
 });

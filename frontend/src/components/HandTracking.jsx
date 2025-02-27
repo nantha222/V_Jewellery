@@ -2,58 +2,67 @@ import React, { useEffect, useRef } from "react";
 import { Hands } from "@mediapipe/hands";
 import { Camera } from "@mediapipe/camera_utils";
 
-const HandTracking = () => {
+const HandTracking = ({ onHandDetected }) => {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  let hands;
+  const handsRef = useRef(null);
+  const cameraRef = useRef(null);
 
   useEffect(() => {
-    const initializeMediaPipe = async () => {
-      hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-      });
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
 
-      hands.setOptions({
-        maxNumHands: 2,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`,
+    });
 
-      hands.onResults(onResults);
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5,
+    });
 
-      const camera = new Camera(videoRef.current, {
-        onFrame: async () => {
-          await hands.send({ image: videoRef.current });
-        },
-        width: 640,
-        height: 480,
-      });
-
-      camera.start();
-    };
-
-    const onResults = (results) => {
-      if (results.multiHandLandmarks) {
-        console.log("Hand detected:", results.multiHandLandmarks);
-      } else {
-        console.log("No hands detected.");
+    hands.onResults((results) => {
+      if (results.multiHandLandmarks.length > 0) {
+        onHandDetected(results.multiHandLandmarks[0]); // Send first detected hand
       }
-    };
+    });
 
-    initializeMediaPipe().catch(console.error);
+    handsRef.current = hands;
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        if (handsRef.current) {
+          await handsRef.current.send({ image: videoElement });
+        }
+      },
+      width: 640,
+      height: 480,
+    });
+
+    cameraRef.current = camera;
+    camera.start();
 
     return () => {
-      if (hands) {
-        hands.close();
+      if (handsRef.current) {
+        handsRef.current.close();
+        handsRef.current = null;
+      }
+
+      if (cameraRef.current) {
+        cameraRef.current.stop();
+        cameraRef.current = null;
       }
     };
-  }, []);
+  }, [onHandDetected]);
 
   return (
-    <div>
-      <video ref={videoRef} autoPlay playsInline width="640" height="480" />
-      <canvas ref={canvasRef} width="640" height="480" style={{ position: "absolute", top: 0, left: 0 }} />
+    <div className="flex flex-col items-center">
+      <video
+        ref={videoRef}
+        className="w-[640px] h-[480px] border-2 border-gray-300 rounded-lg"
+        autoPlay
+      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 const HomePage = () => {
   const [jewelryList, setJewelryList] = useState([]);
@@ -71,71 +72,104 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-r from-blue-900 to-indigo-900 text-white py-12 px-6">
-      <div className="max-w-6xl mx-auto bg-white bg-opacity-10 p-8 rounded-lg shadow-2xl">
-        <h2 className="text-4xl font-bold text-white mb-8 text-center">Uploaded Jewelry</h2>
-        {message && (
-          <p className={`text-center font-medium mb-6 ${message.includes("Failed") ? "text-red-400" : "text-green-400"}`}>
-            {message}
-          </p>
-        )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {jewelryList.map((item) => (
-            <div key={item._id} className="bg-white bg-opacity-90 shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105">
-             <img src={`http://localhost:5000${item.imageUrl}`} alt={item.name} />
-              <div className="p-4 space-y-3">
-                <h3 className="text-xl font-bold text-gray-800">{item.name}</h3>
-                <p className="text-gray-700">Price: ₹{item.price}</p>
-                <p className="text-gray-700">Weight: {item.weight}g</p>
-                <p className="text-gray-600 text-sm">{item.description}</p>
-                <div className="flex justify-between mt-4">
-                  <button
-                    onClick={() => handleDelete(item._id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => handleEdit(item)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                  >
-                    Edit
-                  </button>
-                </div>
+    <div className="w-full">
+      <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">
+        Jewelry Collection
+        <span className="block text-base md:text-lg text-emerald-600 mt-2">
+          Manage Your Designs
+        </span>
+      </h1>
+
+      {message && (
+        <div className={`text-center mb-6 p-3 rounded-lg ${
+          message.includes("success") ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+        }`}>
+          {message}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {jewelryList.map((item) => (
+          <div
+            key={item._id}
+            className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-[1.02] group"
+          >
+            <div className="h-60 bg-gray-100 relative">
+              <img
+                src={`http://localhost:5000${item.imageUrl}`}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => handleEdit(item)}
+                  className="p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-emerald-100 text-emerald-600 shadow-sm"
+                >
+                  <FiEdit className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  className="p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-red-100 text-red-600 shadow-sm"
+                >
+                  <FiTrash2 className="w-5 h-5" />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="p-5">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">{item.name}</h3>
+              <div className="flex gap-4 mb-3">
+                <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
+                  ₹{item.price}
+                </span>
+                <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">
+                  {item.weight}g
+                </span>
+              </div>
+              <p className="text-gray-600 line-clamp-3">{item.description}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Edit Modal */}
       {editItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-xl font-bold text-gray-700 mb-4">Edit Jewelry</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">Edit Item</h3>
             <input
               type="number"
               value={editItem.price}
               onChange={(e) => setEditItem({ ...editItem, price: e.target.value })}
-              className="w-full p-2 border  text-black border-gray-300 rounded-md mb-3"
+              className="w-full p-3 mb-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
               placeholder="Price"
             />
             <input
               type="number"
               value={editItem.weight}
               onChange={(e) => setEditItem({ ...editItem, weight: e.target.value })}
-              className="w-full p-2 border text-black border-gray-300 rounded-md mb-3"
+              className="w-full p-3 mb-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
               placeholder="Weight"
             />
             <textarea
               value={editItem.description}
               onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
-              className="w-full p-2 border  text-black border-gray-300 rounded-md mb-3"
+              className="w-full p-3 mb-6 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 h-32"
               placeholder="Description"
-            ></textarea>
-            <div className="flex justify-end space-x-4">
-              <button onClick={() => setEditItem(null)} className="px-4 py-2 bg-gray-400 rounded-md">Cancel</button>
-              <button onClick={handleUpdate} className="px-4 py-2 bg-green-500 text-white rounded-md">Save</button>
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setEditItem(null)}
+                className="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdate}
+                className="px-5 py-2 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg"
+              >
+                Save Changes
+              </button>
             </div>
           </div>
         </div>
